@@ -15,24 +15,31 @@ dotenv.config();
 app.post('/chat', async (req, res) => {
   const userMessage = req.body.question;
   console.log("Käyttäjä lähetti chatGPT:lle viestin: " + userMessage);
+  try{
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-4',
+        messages: [
+          { role: 'user', content: userMessage }
+        ],
+        max_tokens: 150
+      })
+    });
   
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
-    },
-    body: JSON.stringify({
-      model: 'gpt-4',
-      messages: [
-        { role: 'user', content: userMessage }
-      ],
-      max_tokens: 150
-    })
-  });
-
-  const data = await response.json();
-  console.log('API response:', data.choices[0].message.content);
+    const data = await response.json();
+    console.log('API response:', data.choices[0].message.content);
+    
+    const reply = data.choices[0].message.content;
+    
+    res.json({reply});
+  }catch(error){
+    console.error('Virheviesti:',error.message);
+  }
 
 
 

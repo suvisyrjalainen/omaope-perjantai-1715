@@ -25,8 +25,8 @@ async function sendMessage() {
   if (response.status == 200){
     const data = await response.json();
     console.log(data)
-    console.log(data.question);
-    addMessageToChat(data.question);
+    console.log(data.reply);
+    addMessageToChat(data.reply);
   }
   else{
     console.log(response);
@@ -37,6 +37,7 @@ async function sendMessage() {
 
 function addMessageToChat(message) {
     const messageElement = document.createElement('div');
+    messageElement.classList.add('message');
     messageElement.textContent = message;
     console.log(messageElement);
 
