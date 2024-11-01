@@ -5,6 +5,9 @@ document.getElementById('user-input-chatbox').addEventListener('keypress', funct
       sendMessage();
     }
   });
+
+  document.getElementById('send-images-button').addEventListener('click', sendImages);
+
   
 
 async function sendMessage() {
@@ -12,7 +15,7 @@ async function sendMessage() {
     const userMessage = document.getElementById('user-input-chatbox').value;
     document.getElementById('user-input-chatbox').value = '';
     console.log(userMessage);
-    addMessageToChat(userMessage);
+    addMessageToChat("Sinä: " + userMessage, "user-message");
 
     const response = await fetch('/chat', {
     method: 'POST',
@@ -26,18 +29,18 @@ async function sendMessage() {
     const data = await response.json();
     console.log(data)
     console.log(data.reply);
-    addMessageToChat(data.reply);
+    addMessageToChat("ChatGPT: " + data.reply, "bot-message");
   }
   else{
     console.log(response);
-    addMessageToChat('ChatGPT: Jotain meni pieleen. Yritä uudelleen myöhemmin.');
+    addMessageToChat('ChatGPT: Jotain meni pieleen. Yritä uudelleen myöhemmin.', "bot-message");
   }
 
 }
 
-function addMessageToChat(message) {
+function addMessageToChat(message, className) {
     const messageElement = document.createElement('div');
-    messageElement.classList.add('message');
+    messageElement.classList.add('message', className);
     messageElement.textContent = message;
     console.log(messageElement);
 
@@ -45,3 +48,15 @@ function addMessageToChat(message) {
 
 
 }
+
+function sendImages(){
+  const imageInput = document.getElementById('image-input');
+  const files = imageInput.files;
+  console.log(files);
+
+  if (files.length === 0) {
+    alert('Valitse kuvia ensin.');
+    return;
+  }  
+}
+
