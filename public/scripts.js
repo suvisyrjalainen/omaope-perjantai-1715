@@ -49,7 +49,7 @@ function addMessageToChat(message, className) {
 
 }
 
-function sendImages(){
+async function sendImages(){
   const imageInput = document.getElementById('image-input');
   const files = imageInput.files;
   console.log(files);
@@ -57,6 +57,32 @@ function sendImages(){
   if (files.length === 0) {
     alert('Valitse kuvia ensin.');
     return;
-  }  
+  } 
+  
+  const formData = new FormData();
+  console.log(formData);
+
+  for (const file of files) {
+    formData.append('images', file);
+  }
+
+  //logataan että nähdään tiedostot
+  console.log(formData.getAll('images'));
+
+  const response = await fetch('/upload-images', {
+    method: 'POST',
+    body: formData
+  })
+
+  const data = await response.json();
+  
+  if(response.status === 200){
+    console.log(data.message);
+  }
+  else{
+      console.log(data);
+      alert(data.error);
+  }
+
 }
 

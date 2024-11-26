@@ -1,6 +1,12 @@
 body{
     background-color: rgb(220, 158, 13);
     margin: 0px;
+    padding: 20px;
+}
+
+.column{
+    padding-left: 20px;
+    padding-right: 20px;  
 }
 
 .chatbox{
@@ -8,6 +14,7 @@ body{
     width: 100%;
     padding-bottom: 10px;
     padding-top: 10px;
+    border-radius: 5px 5px 0px 0px;
 }
 
 .user-input{
@@ -15,11 +22,10 @@ body{
     border: none;
     padding-bottom: 10px;
     padding-top: 10px;
+    border-radius: 0px 0px 5px 5px;
 }
 
-.chatbox-container{
-    width: 50%;
-}
+
 
 .message{
     text-align: left;
@@ -32,4 +38,28 @@ body{
 
 .bot-message{
     font-weight: normal;
+}
+
+.input-container {
+    display: flex;
+    margin-bottom: 10px;  /* Lisää tämä */
+    background-color: white;
+    width: 100%;
+    border-radius: 5px;
+}
+
+
+#image-input {
+    flex: 1;
+    padding: 10px;
+    border: none;
+}
+
+/*
+.upload-button {
+    display: inline-block;
+    padding: 10px 20px;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 5px;
 }
