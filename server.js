@@ -21,6 +21,8 @@ const client = new vision.ImageAnnotatorClient({
 });
 
 let koealueTekstina = '';
+let context = [];
+
 
 app.post('/chat', async (req, res) => {
   const userMessage = req.body.question;
@@ -71,18 +73,25 @@ app.post('/upload-images', upload.array('images', 10), async (req, res) => {
      const [result] = await client.textDetection(imagePath);
      //ottaa result-muuttujasta kaikki tekstintunnistusmerkinnät (textAnnotations), jotka sisältävät kaikki kuvasta tunnistetut tekstialueet.
      const detections = result.textAnnotations;
+     console.log('OCR Detected Text:', detections);
      // poistaa tiedoston, joka on luotu kuvan lähettämisen yhteydessä
      fs.unlinkSync(imagePath); 
      // Koodi tarkistaa, löytyykö kuvasta OCR-tunnistuksen perusteella tekstiä. Jos löytyy, se palauttaa tämän tekstin. Jos ei, se palauttaa tyhjän merkkijonon 
      return detections.length > 0 ? detections[0].description : '';
     }));
-
+    
+    console.log(texts);
     koealueTekstina = texts.join(' ');
-    console.log('OCR Combined Text:', koealueTekstina);
+    console.log(koealueTekstina);
+
+    context = [{ role: 'user', content: koealueTekstina }];
+
+    
+    
     //res.json({message: 'Kuvat vastaanotettu'});
   }
 
-
+  
 
 })
 
