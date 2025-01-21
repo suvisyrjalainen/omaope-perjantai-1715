@@ -5,6 +5,8 @@ import multer from 'multer';
 import vision from '@google-cloud/vision';
 import fs from 'fs';
 
+let currentQuestion = ''; //Muuttuja kysymyksen tallentamiseen
+let correctAnswer = ''; // Muuttuja oikean vastauksen tallentamiseen
 
 const app = express();
 const port = 3000;
@@ -87,27 +89,85 @@ app.post('/upload-images', upload.array('images', 10), async (req, res) => {
     context = [{ role: 'user', content: koealueTekstina }];
 
     
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: context.concat([{ role: 'user', content: 'Luo yksi yksinkertainen ja selkeä kysymys kysymys: -kenttään ja sen vastaus yllä olevasta tekstistä suomeksi vastaus: -kenttään. Kysy vain yksi asia kerrallaan.' }]),
+        max_tokens: 150
+      })
+    }); 
+
+    const data = await response.json();
+    console.log(data.choices[0].message.content);
+
+    const responseText = data.choices[0].message.content;
+
+    console.log('API response:', responseText);
+
+    const [question, answer] = responseText.includes('Vastaus:') ? responseText.split('Vastaus:'): [responseText, null]; 
+
+    console.log('Parsed Question:', question);
+    console.log('Parsed Answer:', answer);
+
+    if (!question || !answer) {
+      return res.status(400).json({ error: 'Model could not generate a valid question. Please provide a clearer text.' });
+    }
+
     
-    //res.json({message: 'Kuvat vastaanotettu'});
+    currentQuestion = question.trim(); // Päivitetään nykyinen kysymys
+    correctAnswer = answer.trim();
+
+    context.push({ role: 'assistant', content: `Kysymys: ${currentQuestion}` });
+    context.push({ role: 'assistant', content: `Vastaus: ${correctAnswer}` });
+
+    res.json({ question: currentQuestion, answer: correctAnswer });
+     
   }
 
-  
+});
 
-})
 
-/*
-app.post('/ekatesti', (req, res) => {
-    const userMessage = req.body.question;
-    console.log("Käyttäjä lähetti backendille viestin: " + userMessage);
+app.post('/check-answer', async (req, res) => {
+  const userAnswer = req.body.user_answer;
+  const correctAnswer = req.body.correct_answer;
+  console.log("Käyttäjän vastaus: " + userAnswer);
+  console.log("Tietokoneen vastaus: " + correctAnswer);
 
-    if (userMessage) {
-      res.json({ question: `Tämä on serverin palauttama viesti frontille: ${userMessage}` });
-    } else {
-      res.status(400).json({ error: 'Kysymys puuttuu.' });
-    }
-  })
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: 'Olet aina ihana opettaja joka arvioi oppilaan vastauksen kannustavaan sävyyn.' },
+        { role: 'user', content: `Kysymys: ${currentQuestion}` },
+        { role: 'user', content: `Oikea vastaus: ${correctAnswer}` },
+        { role: 'user', content: `Opiskelijan vastaus: ${userAnswer}` },
+        { role: 'user', content: 'Arvioi opiskelijan vastaus asteikolla 0-10 ja anna lyhyt selitys. Kehu oppilasta.' }
+      ],
+      max_tokens: 150
+    })
+  });
 
-*/
+  if(response.status === 200){
+
+     const data = await response.json();
+     //console.log('API response:', JSON.stringify(data));
+
+     const evaluation = data.choices[0].message.content.trim();
+     console.log('Evaluation:', evaluation);
+
+     res.json({ evaluation });  
+  }
+});
 
 
 app.listen(port, () => {
